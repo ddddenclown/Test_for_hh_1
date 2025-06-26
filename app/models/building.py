@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
 
-from app.db.db import Base
+from app.models.Base import Base
 
 
 class Building(Base):

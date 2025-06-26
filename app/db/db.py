@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.core.config import settings
+from app.models import Base
 
 
 engine = create_async_engine(
@@ -19,6 +20,3 @@ async_session = sessionmaker(
 async def get_async_session() -> AsyncSession:
     async with async_session() as session:
         yield session
-
-class Base(DeclarativeBase):
-    pass

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 
-from app.db.db import Base
+from app.models.Base import Base
 
 
 organization_activity = Table(
@@ -17,7 +17,7 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False, index=True)
-    building_id = Column(Integer, ForeignKey("buildings.id", ondelete="SET NULL"), nullable=True)
+    building_id = Column(Integer, ForeignKey("buildings.id", ondelete="SET NULL"), nullable=False)
 
     building = relationship(
         "Building",

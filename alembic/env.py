@@ -7,12 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from app.core.config import settings
-from app.db.db import Base
-from app import models
-
-from app.models.activity import ActivityType
-from app.models.building import Building
-from app.models.organization import Organization, OrganizationPhone
+from app.models import Base
 
 config = context.config
 fileConfig(config.config_file_name)

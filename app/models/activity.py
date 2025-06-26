@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint, event
 from sqlalchemy.orm import relationship
 
-from app.db.db import Base
+from app.models.Base import Base
 
 
 class ActivityType(Base):
@@ -36,3 +36,13 @@ class ActivityType(Base):
         back_populates="activities",
         lazy="selectin"
     )
+
+
+@event.listens_for(ActivityType.parent, 'set')
+def update_level(target, value, oldvalue, initiator):
+    if value:
+        if value.level >= 3:
+            raise ValueError("Нельзя вложить глубже 3 уровней")
+        target.level = value.level + 1
+    else:
+        target.level = 1

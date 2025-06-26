@@ -25,7 +25,8 @@ class OrganizationCreate(OrganizationBase):
 class OrganizationRead(BaseModel):
     id: int
     name: str
-    building: Optional[BuildingRead] = []
-    activities: Optional[ActivityRead] = []
+    building: Optional[BuildingRead] = None
+    activities: Optional[ActivityRead] = Field(default_factory=list)
+    phones: List[OrganizationPhone] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
