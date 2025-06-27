@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.db.db import get_async_session
-from app.schemas.activity import ActivityCreate, ActivityRead
+from app.schemas.activity import ActivityCreate, ActivityRead, ActivityTree
 from app.crud.activity import get_activity_type, get_all_activity_types, create_activity_type, get_activity_tree
 
 
@@ -24,7 +24,7 @@ async def create_type_activity(
         )
 
 
-@router.get("/tree", response_model=List[ActivityRead])
+@router.get("/tree", response_model=List[ActivityTree])
 async def get_activity_tree_endpoint(db: AsyncSession = Depends(get_async_session)):
     return await get_activity_tree(db=db)
 

@@ -14,7 +14,12 @@ class ActivityCreate(ActivityBase):
 class ActivityRead(ActivityBase):
     id: int
     level: int = Field(..., description="Уровень вложеннности от 1 до 3")
-    children: List["ActivityRead"] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ActivityTree(ActivityRead):
+    children: List["ActivityTree"] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

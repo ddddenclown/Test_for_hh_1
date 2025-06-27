@@ -5,7 +5,7 @@ from typing import List
 from sqlalchemy.orm import selectinload
 
 from app.models.activity import ActivityType
-from app.schemas.activity import ActivityCreate, ActivityRead
+from app.schemas.activity import ActivityCreate, ActivityRead, ActivityTree
 
 
 async def create_activity_type(db: AsyncSession,
@@ -49,7 +49,7 @@ async def get_all_activity_types(db: AsyncSession):
     return result.scalars().all()
 
 
-async def get_activity_tree(db: AsyncSession) -> List[ActivityRead]:
+async def get_activity_tree(db: AsyncSession) -> List[ActivityTree]:
     result = await db.execute(
         select(ActivityType)
         .options(
@@ -58,15 +58,17 @@ async def get_activity_tree(db: AsyncSession) -> List[ActivityRead]:
             .selectinload(ActivityType.children)
         )
         .filter(ActivityType.parent_id == None)
+        .order_by(ActivityType.id)
     )
     root_nodes = result.scalars().all()
 
-    def to_dto(node: ActivityType) -> ActivityRead:
-        return ActivityRead(
+    def to_dto(node: ActivityType) -> ActivityTree:
+        return ActivityTree(
             id=node.id,
             name=node.name,
             parent_id=node.parent_id,
             level=node.level,
             children=[to_dto(child) for child in node.children] if node.children else []
         )
+
     return [to_dto(node) for node in root_nodes]
