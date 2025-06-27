@@ -81,3 +81,24 @@ async def get_organization(
         .where(Organization.id == organization_id)
     )
     return result.scalars().first()
+
+
+async def search_by_name(
+        org_name: str,
+        db: AsyncSession,
+        offset: int = 0,
+        limit: int = 100,
+) -> List[Organization]:
+    result = await db.execute(
+        select(Organization)
+        .options(
+            selectinload(Organization.building),
+            selectinload(Organization.activities),
+            selectinload(Organization.phones)
+        )
+        .where(Organization.name.ilike(f"%{org_name}%"))
+        .offset(offset)
+        .limit(limit)
+        .order_by(Organization.name)
+    )
+    return result.scalars().all()

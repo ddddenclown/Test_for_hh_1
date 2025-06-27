@@ -4,7 +4,7 @@ from typing import List
 
 from app.db.db import get_async_session
 from app.schemas.organization import OrganizationCreate, OrganizationRead
-from app.crud.organization import create_organization, get_organization, get_organization_by_building
+from app.crud.organization import create_organization, get_organization, get_organization_by_building, search_by_name
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def create_new_organization(
         )
 
 
-@router.get("/organization/{organization_id}", response_model=OrganizationRead)
+@router.get("/id/{organization_id}", response_model=OrganizationRead)
 async def get_organization_by_id(
         org_id: int,
         db: AsyncSession = Depends(get_async_session),
@@ -37,10 +37,18 @@ async def get_organization_by_id(
     return result
 
 
-@router.get("/build/{building_id}", response_model=List[OrganizationRead])
+@router.get("/building/{building_id}", response_model=List[OrganizationRead])
 async def get_organization_in_building(
         building_id: int,
         db: AsyncSession = Depends(get_async_session),
 ):
     result = await get_organization_by_building(db=db, building_id=building_id)
     return result
+
+
+@router.get("/names/{name}", response_model=List[OrganizationRead])
+async def search_organizations_by_name(
+        org_name: str,
+        db: AsyncSession = Depends(get_async_session),
+):
+    return await search_by_name(db=db, org_name=org_name)
