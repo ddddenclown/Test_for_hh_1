@@ -31,7 +31,11 @@
    pip install -r requirements.txt
    ```
 
-5. При использовании Docker поменяйте в `.env` переменную `POSTGRES_SERVER` на `db`
+5. Отредактируйте файл `.env`, чтобы указать правильный адрес базы данных (не забудьте изменить URL в seed.py):
+
+- Для запуска без Docker: укажите в `DATABASE_URL` адрес вашей локальной базы (например, `postgresql://user:password@localhost:5432/dbname`).
+- Для запуска с Docker: замените в `.env` переменную `POSTGRES_SERVER` на `db`, а `DATABASE_URL` скорректируйте соответственно (например, `postgresql://user:password@db:5432/dbname`).
+
 
 6. Выполните миграции базы данных:
 
