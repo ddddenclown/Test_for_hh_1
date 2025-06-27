@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
+from math import cos, radians
 
 from app.models import Organization, OrganizationPhone, ActivityType, Building
 from app.models.organization import organization_activity
@@ -65,6 +66,25 @@ async def get_organization_by_building(
             selectinload(Organization.phones)
         )
         .where(Organization.building_id == building_id)
+    )
+    return result.scalars().all()
+
+
+async def get_all_organizations(
+        db: AsyncSession,
+        offset: 0,
+        limit: 100,
+) -> List[Organization]:
+    result = await db.execute(
+        select(Organization)
+        .options(
+            selectinload(Organization.phones),
+            selectinload(Organization.building),
+            selectinload(Organization.activities)
+        )
+        .order_by(Organization.name)
+        .offset(offset)
+        .limit(limit)
     )
     return result.scalars().all()
 
@@ -145,3 +165,70 @@ async def get_organizations_by_activity_simple(
     )
     orgs = (await db.execute(q)).scalars().all()
     return orgs
+
+
+async def get_organizations_in_radius(
+    db: AsyncSession,
+    lat: float,
+    lon: float,
+    radius_km: float
+) -> List[Organization]:
+    lat_delta = radius_km / 111
+    lon_delta = radius_km / (111 * cos(radians(lat)))
+
+    lat_min = lat - lat_delta
+    lat_max = lat + lat_delta
+    lon_min = lon - lon_delta
+    lon_max = lon + lon_delta
+
+    stmt_buildings = select(Building.id).where(
+        Building.latitude.between(lat_min, lat_max),
+        Building.longitude.between(lon_min, lon_max)
+    )
+    result = await db.execute(stmt_buildings)
+    building_ids = [id for id, in result]
+
+    if not building_ids:
+        return []
+
+    stmt_orgs = (
+        select(Organization)
+        .where(Organization.building_id.in_(building_ids))
+        .options(
+            selectinload(Organization.building),
+            selectinload(Organization.phones),
+            selectinload(Organization.activities)
+        )
+    )
+    result = await db.execute(stmt_orgs)
+    return result.scalars().all()
+
+
+async def get_organizations_in_rectangle(
+    db: AsyncSession,
+    lat_min: float,
+    lat_max: float,
+    lon_min: float,
+    lon_max: float
+) -> List[Organization]:
+    stmt_buildings = select(Building.id).where(
+        Building.latitude.between(lat_min, lat_max),
+        Building.longitude.between(lon_min, lon_max)
+    )
+    result = await db.execute(stmt_buildings)
+    building_ids = [id for id, in result]
+
+    if not building_ids:
+        return []
+
+    stmt_orgs = (
+        select(Organization)
+        .where(Organization.building_id.in_(building_ids))
+        .options(
+            selectinload(Organization.building),
+            selectinload(Organization.phones),
+            selectinload(Organization.activities)
+        )
+    )
+    result = await db.execute(stmt_orgs)
+    return result.scalars().all()
