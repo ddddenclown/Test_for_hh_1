@@ -23,7 +23,7 @@ async def create_new_organization(
         )
 
 
-@router.get("/id/{organization_id}", response_model=OrganizationRead)
+@router.get("/{organization_id}", response_model=OrganizationRead)
 async def get_organization_by_id(
         org_id: int,
         db: AsyncSession = Depends(get_async_session),
@@ -46,7 +46,7 @@ async def get_organization_in_building(
     return result
 
 
-@router.get("/names/{name}", response_model=List[OrganizationRead])
+@router.get("/search/{name}", response_model=List[OrganizationRead])
 async def search_organizations_by_name(
         org_name: str,
         db: AsyncSession = Depends(get_async_session),
