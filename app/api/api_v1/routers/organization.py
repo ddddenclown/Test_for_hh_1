@@ -4,7 +4,8 @@ from typing import List
 
 from app.db.db import get_async_session
 from app.schemas.organization import OrganizationCreate, OrganizationRead
-from app.crud.organization import create_organization, get_organization, get_organization_by_building, search_by_name
+from app.crud.organization import create_organization, get_organization, get_organization_by_building, search_by_name, \
+    get_organizations_by_activity_simple
 
 router = APIRouter()
 
@@ -52,3 +53,28 @@ async def search_organizations_by_name(
         db: AsyncSession = Depends(get_async_session),
 ):
     return await search_by_name(db=db, org_name=org_name)
+
+
+@router.get(
+    "/by-activity/{activity_id}",
+    response_model=List[OrganizationRead],
+    summary="Организации по виду деятельности"
+)
+async def list_by_activity_simple(
+    activity_id: int,
+    include_descendants: bool = Query(False, description="Включить потомков"),
+    db: AsyncSession = Depends(get_async_session),
+        offset: int = 0,
+        limit: int = 100
+):
+    orgs = await get_organizations_by_activity_simple(db=db,
+                                                      activity_id=activity_id,
+                                                      include_descedant=include_descendants,
+                                                      offset=offset,
+                                                      limit=limit)
+    if not orgs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Организации по этому виду деятельности не найдены"
+        )
+    return orgs

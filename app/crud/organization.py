@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, List
 
 from app.models import Organization, OrganizationPhone, ActivityType, Building
+from app.models.organization import organization_activity
 from app.schemas.organization import OrganizationCreate
 
 
@@ -102,3 +103,45 @@ async def search_by_name(
         .order_by(Organization.name)
     )
     return result.scalars().all()
+
+
+async def get_organizations_by_activity_simple(
+        db: AsyncSession,
+        activity_id: int,
+        include_descedant: bool = False,
+        offset: int = 0,
+        limit: int = 100
+) ->List[Organization]:
+    result = await db.execute(select(ActivityType))
+    all_activities: List[ActivityType] = result.scalars().all()
+
+    children_map: dict[int, List[int]] = {}
+    for act in all_activities:
+        if act.parent_id is not None:
+            children_map.setdefault(act.parent_id, []).append(act.id)
+
+    ids = {activity_id}
+    if include_descedant:
+        stack = [activity_id]
+        while stack:
+            current = stack.pop()
+            for child_id in children_map.get(current, []):
+                if child_id not in ids:
+                    ids.add(child_id)
+                    stack.append(child_id)
+
+    q = (
+        select(Organization)
+        .join(organization_activity, Organization.id == organization_activity.c.organization_id)
+        .where(organization_activity.c.activity_type_id.in_(ids))
+        .options(
+            selectinload(Organization.phones),
+            selectinload(Organization.activities).selectinload(ActivityType.children)
+        )
+        .distinct()
+        .offset(offset)
+        .limit(limit)
+        .order_by(Organization.name)
+    )
+    orgs = (await db.execute(q)).scalars().all()
+    return orgs
