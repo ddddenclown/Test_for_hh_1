@@ -29,17 +29,17 @@ async def create_activity_type(db: AsyncSession,
     return activity
 
 
-async def get_activity_type(db: AsyncSession,
-                            activity_id: int,
-                            ):
+async def get_activity_type(db: AsyncSession, activity_id: int):
     result = await db.execute(
         select(ActivityType)
         .options(
-            selectinload(ActivityType.children).selectinload(ActivityType.children)
+            selectinload(ActivityType.children)
+            .selectinload(ActivityType.children)
+            .selectinload(ActivityType.children)
         )
         .where(ActivityType.id == activity_id)
     )
-    return result.scalars().first()
+    return result.scalar_one_or_none()
 
 
 async def get_all_activity_types(db: AsyncSession):
@@ -67,6 +67,6 @@ async def get_activity_tree(db: AsyncSession) -> List[ActivityRead]:
             name=node.name,
             parent_id=node.parent_id,
             level=node.level,
-            children=[to_dto(child) for child in node.children]
+            children=[to_dto(child) for child in node.children] if node.children else []
         )
     return [to_dto(node) for node in root_nodes]
