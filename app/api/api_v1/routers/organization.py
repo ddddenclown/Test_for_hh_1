@@ -19,12 +19,12 @@ async def create_new_organization(
         return organization
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
 
 
-@router.get("/organizations", response_model=List[OrganizationRead])
+@router.get("/", response_model=List[OrganizationRead])
 async def list_all_organizations(
         db: AsyncSession = Depends(get_async_session),
         offset: int = 0,
@@ -114,6 +114,6 @@ async def get_organization_by_id(
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Нету!!"
+            detail="Такой организации нет."
         )
     return result

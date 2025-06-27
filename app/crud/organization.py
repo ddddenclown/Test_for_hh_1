@@ -72,8 +72,8 @@ async def get_organization_by_building(
 
 async def get_all_organizations(
         db: AsyncSession,
-        offset: 0,
-        limit: 100,
+        offset: int = 0,
+        limit: int = 100,
 ) -> List[Organization]:
     result = await db.execute(
         select(Organization)
